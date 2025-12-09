@@ -1,0 +1,17 @@
+{
+<<<<<<< HEAD
+<<<<<<< HEAD
+  "compile-hero.disable-compile-files-on-did-save-code": false,
+  "postman.settings.dotenv-detection-notification-visibility": false
+}
+=======
+}
+>>>>>>> f13b0f25e2602cc9ac72308606a891fadf7384c6
+=======
+}
+=======
+  "compile-hero.disable-compile-files-on-did-save-code": false,
+  "postman.settings.dotenv-detection-notification-visibility": false
+}
+>>>>>>> 89bbb8b14e7772009b3f45dcd355105ab2157e74
+>>>>>>> 4f2edb793ff7b8646129c6d5cebd0c79f5ac157f

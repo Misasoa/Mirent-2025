@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true
+  },
+  "assets": [
+    {
+      "glob": "**/*.hbs",
+      "input": "C:\\Users\\User\\Documents\\stage\\MirentLocation\\mirentt-bo\\src\\mailer\\templates",
+      "output": "mailer\\templates"
+    }
+  ]
+}

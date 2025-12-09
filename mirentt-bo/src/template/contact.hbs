@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .header {
+      background-color: #1e88e5;
+      padding: 15px;
+      border-radius: 10px 10px 0 0;
+      text-align: center;
+      color: white;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      text-align: center;
+      color: #888;
+    }
+    .label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Mirent Location - Nouveau message</h2>
+    </div>
+    <p><span class="label">Email de l'expéditeur :</span> {{email}}</p>
+    <p><span class="label">Message :</span></p>
+    <p>{{message}}</p>
+
+    <div class="footer">
+      © 2025 Mirent Location - Tous droits réservés
+    </div>
+  </div>
+</body>
+</html>
