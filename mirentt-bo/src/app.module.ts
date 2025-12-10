@@ -80,7 +80,6 @@ import { Reservation } from './entities/reservation.entity';
     VehiclesModule,
     TypeModule,
     StatusModule,
-    RegionsModule,
     ClientModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
