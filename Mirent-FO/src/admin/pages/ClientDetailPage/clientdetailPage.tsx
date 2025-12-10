@@ -10,12 +10,7 @@ const ClientDetailPage: React.FC = () => {
           <ClienDetailtList />
         </Grid>
       </Grid>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <ContractDetails clientId={44} />{" "}
-          {/* Remplacez 1 par l'ID du client sélectionné */}
-        </Grid>
-      </Grid>
+
     </Container>
   );
 };

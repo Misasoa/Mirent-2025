@@ -9,7 +9,7 @@ export class NotificationsService {
   constructor(
     @InjectRepository(Notification)
     private notificationsRepository: Repository<Notification>,
-  ) {}
+  ) { }
 
   /**
    * Crée une nouvelle notification dans la base de données.
@@ -83,5 +83,20 @@ export class NotificationsService {
     //   unreadNotifications.forEach(notif => (notif.isRead = true));
     //   await this.notificationsRepository.save(unreadNotifications);
     // }
+  }
+  /**
+   * Supprime une notification spécifique.
+   * Ceci correspond au DELETE /notifications/:id de votre contrôleur.
+   * @param id L'ID de la notification à supprimer.
+   * @throws NotFoundException Si la notification n'est pas trouvée.
+   */
+  async delete(id: number): Promise<void> {
+    const notification = await this.notificationsRepository.findOne({
+      where: { id },
+    });
+    if (!notification) {
+      throw new NotFoundException(`Notification avec l'ID ${id} non trouvée.`);
+    }
+    await this.notificationsRepository.remove(notification);
   }
 }

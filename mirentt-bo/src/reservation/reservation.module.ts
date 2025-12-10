@@ -14,6 +14,7 @@ import { PrixCarburant } from 'src/entities/carburant-price.entity';
 import { Facture } from 'src/entities/facture.entity';
 import { FactureModule } from 'src/facturation/facturation.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { PdfService } from 'src/pdf/pdf.service';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
     FactureModule,
     NotificationsModule,
   ],
-  providers: [ReservationService],
+  providers: [ReservationService, PdfService],
   controllers: [ReservationController],
 })
 export class ReservationModule { }

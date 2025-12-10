@@ -6,13 +6,14 @@ import {
   HttpCode,
   HttpStatus,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { Notification } from '../entities/notifications.entity'; // Assurez-vous d'importer l'entité Notification
 
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(private readonly notificationsService: NotificationsService) { }
 
   /**
    * Récupère TOUTES les notifications.
@@ -54,5 +55,14 @@ export class NotificationsController {
   @HttpCode(HttpStatus.NO_CONTENT) // Retourne 204 No Content
   async markAllAsRead(): Promise<void> {
     await this.notificationsService.markAllAsRead();
+  }
+  /**
+   * Supprime une notification spécifique.
+   * @param id L'ID de la notification à supprimer.
+   */
+  @Delete(':id') // <-- NOUVELLE ROUTE : Gère les requêtes DELETE à /notifications/:id
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.notificationsService.delete(id);
   }
 }

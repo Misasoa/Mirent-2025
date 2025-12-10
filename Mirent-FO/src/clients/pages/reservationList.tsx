@@ -55,12 +55,14 @@ const API_BASE_URL = "http://localhost:3000";
 
 // Enumération pour les statuts de réservation (doit correspondre à ReservationStatus.ts du backend)
 enum ReservationStatus {
-  UPCOMING = "À venir",
-  IN_PROGRESS = "En cours",
-  COMPLETED = "Terminée",
-  CANCELLED = "Annulée",
-  PENDING_PAYMENT = "En attente de paiement",
-  CONFIRMED = "Confirmée", // Potentiellement utilisé si vous avez une étape de confirmation explicite
+  DEVIS = "Devis",
+  CONFIRME = "Confirmé",
+  COMPLETE = "Complété",
+  TERMINEE = "Terminée",
+  PAYE = "Payé",
+  ANNULEE = "Annulée",
+  // UPCOMING et IN_PROGRESS sont remplacés par la logique ci-dessus, 
+  // mais on garde les clés si besoin de compatibilité temporaire ou on les retire.
 }
 
 // Interface Reservation - correspond à la structure du backend
@@ -294,47 +296,15 @@ const ReservationList: React.FC = () => {
     }
   };
 
-  // Télécharger le PDF de la proforma
+  // Télécharger le PDF de la proforma (via la réservation)
   const handleDownloadProformaPDF = async (reservationId: number) => {
     try {
-      console.log("🔍 Tentative de téléchargement PDF pour réservation ID:", reservationId);
+      console.log("🔍 Téléchargement PDF pour réservation ID:", reservationId);
       const token = localStorage.getItem("access_token");
 
-      // Étape 1: Récupérer toutes les proformas pour trouver celle de cette réservation
-      console.log("📡 Récupération de toutes les proformas...");
-      const proformasResponse = await fetch(
-        `${API_BASE_URL}/proforma`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
-
-      if (!proformasResponse.ok) {
-        console.error("❌ Erreur récupération proformas:", proformasResponse.status);
-        throw new Error("Impossible de récupérer les proformas");
-      }
-
-      const proformas = await proformasResponse.json();
-      console.log("✅ Proformas récupérées:", proformas);
-      console.log("🔍 Nombre de proformas:", proformas.length);
-
-      // Trouver la proforma qui correspond à cette réservation
-      const proforma = proformas.find((p: any) => {
-        console.log(`Checking proforma ${p.id}, reservation:`, p.reservation);
-        return p.reservation?.id === reservationId;
-      });
-
-      console.log("🎯 Proforma trouvée:", proforma);
-
-      if (!proforma) {
-        console.error("❌ Aucune proforma trouvée pour reservation ID:", reservationId);
-        throw new Error("Aucune proforma trouvée pour cette réservation. Veuillez contacter le support.");
-      }
-
-      // Étape 2: Télécharger le PDF de la proforma
-      console.log("📥 Téléchargement du PDF pour proforma ID:", proforma.id);
+      // Appel direct à l'endpoint de la réservation
       const pdfResponse = await fetch(
-        `${API_BASE_URL}/proforma/${proforma.id}/pdf`,
+        `${API_BASE_URL}/reservations/${reservationId}/pdf`,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
@@ -350,7 +320,8 @@ const ReservationList: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `proforma_${proforma.proformaNumber || reservationId}.pdf`;
+      // Nom du fichier par défaut ou générique si besoin
+      link.download = `devis_reservation_${reservationId}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -360,7 +331,6 @@ const ReservationList: React.FC = () => {
       console.error("❌ Erreur lors du téléchargement du PDF:", err);
       const errorMessage = (err as Error).message || "Erreur inconnue";
       setError("Échec du téléchargement du PDF: " + errorMessage);
-      // Afficher aussi une alerte pour l'utilisateur
       alert("Erreur: " + errorMessage);
     }
   };
@@ -383,30 +353,40 @@ const ReservationList: React.FC = () => {
       res.client?.phone?.includes(searchText);
 
     // La logique de détermination du statut affiché reste pertinente
-    let reservationDisplayStatus: ReservationStatus;
+    let reservationDisplayStatus: string;
     const today = dayjs();
     const startDate = dayjs(res.pickup_date);
     const endDate = dayjs(res.return_date);
 
-    // Priorité à l'état "Annulée" ou "Terminée" s'il vient du backend
-    if (res.status === ReservationStatus.CANCELLED) {
-      reservationDisplayStatus = ReservationStatus.CANCELLED;
-    } else if (res.status === ReservationStatus.COMPLETED) {
-      reservationDisplayStatus = ReservationStatus.COMPLETED;
-    } else if (today.isBefore(startDate, "day")) {
-      reservationDisplayStatus = ReservationStatus.UPCOMING;
-    } else if (today.isBetween(startDate, endDate, "day", "[]")) {
-      // Inclut les bornes
-      reservationDisplayStatus = ReservationStatus.IN_PROGRESS;
-    } else if (today.isAfter(endDate, "day")) {
-      reservationDisplayStatus = ReservationStatus.COMPLETED; // Redondant si le backend gère mais assure la cohérence
+    // Mapping du statut backend vers les statuts frontend demandés
+    if (res.status === "devis") {
+      reservationDisplayStatus = ReservationStatus.DEVIS;
+    } else if (res.status === "confirmee") {
+      // Si la date de retour est passée, on considère que c'est "Complété" (prêt à être terminé)
+      if (today.isAfter(endDate, "day")) {
+        reservationDisplayStatus = ReservationStatus.COMPLETE;
+      } else {
+        // Sinon c'est Confirmé (que ce soit à venir ou en cours)
+        reservationDisplayStatus = ReservationStatus.CONFIRME;
+      }
+    } else if (res.status === "terminee") {
+      reservationDisplayStatus = ReservationStatus.TERMINEE;
+    } else if (res.status === "annulee") {
+      reservationDisplayStatus = ReservationStatus.ANNULEE;
     } else {
-      // Si le statut du backend est 'En attente de paiement' ou 'Confirmée'
+      // Fallback
       reservationDisplayStatus = res.status;
     }
 
-    const matchFilter =
-      filter === "Toutes" || reservationDisplayStatus === filter;
+    // Gestion du filtre "Payé" : on considère que "Terminée" équivaut à "Payé" pour ce filtre
+    let matchFilter = false;
+    if (filter === "Toutes") {
+      matchFilter = true;
+    } else if (filter === ReservationStatus.PAYE) {
+      matchFilter = reservationDisplayStatus === ReservationStatus.TERMINEE;
+    } else {
+      matchFilter = reservationDisplayStatus === filter;
+    }
     return matchSearch && matchFilter;
   });
 
@@ -509,19 +489,10 @@ const ReservationList: React.FC = () => {
             </Box>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" fontWeight="bold">
-                {reservations.filter((r) => {
-                  const today = dayjs();
-                  const startDate = dayjs(r.pickup_date);
-                  const endDate = dayjs(r.return_date);
-                  return (
-                    r.status !== "annulee" &&
-                    r.status !== "terminee" &&
-                    today.isBetween(startDate, endDate, "day", "[]")
-                  );
-                }).length}
+                {reservations.filter((r) => r.status === "confirmee").length}
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Réservations en cours
+                Réservations confirmées
               </Typography>
             </Box>
           </Card>
@@ -553,18 +524,10 @@ const ReservationList: React.FC = () => {
             </Box>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" fontWeight="bold">
-                {reservations.filter((r) => {
-                  const today = dayjs();
-                  const startDate = dayjs(r.pickup_date);
-                  return (
-                    r.status !== "annulee" &&
-                    r.status !== "terminee" &&
-                    today.isBefore(startDate, "day")
-                  );
-                }).length}
+                {reservations.filter((r) => r.status === "terminee").length}
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Réservations à venir
+                Réservations terminées
               </Typography>
             </Box>
           </Card>
@@ -714,70 +677,41 @@ const ReservationList: React.FC = () => {
       ) : (
         <Grid container spacing={3}>
           {paginatedReservations.map((res) => {
-            let displayedStatus: ReservationStatus;
-            let chipColor:
-              | "success"
-              | "warning"
-              | "error"
-              | "info"
-              | "primary" = "info";
+            let displayedStatus: string = "";
+            let chipColor: "success" | "warning" | "error" | "info" | "primary" = "info";
 
             const today = dayjs();
-            const startDate = dayjs(res.pickup_date);
             const endDate = dayjs(res.return_date);
 
-            // Détermination du statut affiché basé sur la logique backend et la date actuelle
-            if (res.status === ReservationStatus.CANCELLED) {
-              displayedStatus = ReservationStatus.CANCELLED;
-            } else if (res.status === ReservationStatus.COMPLETED) {
-              displayedStatus = ReservationStatus.COMPLETED;
-            } else if (today.isBefore(startDate, "day")) {
-              displayedStatus = ReservationStatus.UPCOMING;
-            } else if (today.isBetween(startDate, endDate, "day", "[]")) {
-              displayedStatus = ReservationStatus.IN_PROGRESS;
-            } else if (today.isAfter(endDate, "day")) {
-              // Si le backend n'a pas encore mis à jour en "Terminée", on l'affiche comme tel
-              displayedStatus = ReservationStatus.COMPLETED;
-            } else {
-              // Pour les autres statuts comme 'En attente de paiement', 'Confirmée'
-              displayedStatus = res.status;
-            }
-
-            // Définition de la couleur du chip en fonction du statut affiché
-            switch (displayedStatus) {
-              case ReservationStatus.UPCOMING:
+            // Recalcul du statut affiché pour chaque carte (logique identique au filtre)
+            if (res.status === "devis") {
+              displayedStatus = ReservationStatus.DEVIS;
+              chipColor = "info";
+            } else if (res.status === "confirmee") {
+              if (today.isAfter(endDate, "day")) {
+                displayedStatus = ReservationStatus.COMPLETE;
+                chipColor = "warning"; // "Complété" mais pas encore "Terminée" par l'admin
+              } else {
+                displayedStatus = ReservationStatus.CONFIRME;
                 chipColor = "primary";
-                break;
-              case ReservationStatus.IN_PROGRESS:
-                chipColor = "warning";
-                break;
-              case ReservationStatus.COMPLETED:
-                chipColor = "success";
-                break;
-              case ReservationStatus.CANCELLED:
-                chipColor = "error";
-                break;
-              case ReservationStatus.PENDING_PAYMENT:
-                chipColor = "info"; // Ou une autre couleur spécifique
-                break;
-              case ReservationStatus.CONFIRMED:
-                chipColor = "primary"; // Peut-être une nuance différente de primary
-                break;
-              default:
-                chipColor = "info";
+              }
+            } else if (res.status === "terminee") {
+              displayedStatus = ReservationStatus.TERMINEE;
+              chipColor = "success";
+            } else if (res.status === "annulee") {
+              displayedStatus = ReservationStatus.ANNULEE;
+              chipColor = "error";
+            } else {
+              displayedStatus = res.status;
+              chipColor = "default" as any;
             }
 
-            // Les réservations sont annulables si elles sont À venir, En cours ou En attente de paiement/confirmée
             const isCancellable =
-              displayedStatus === ReservationStatus.UPCOMING ||
-              displayedStatus === ReservationStatus.IN_PROGRESS ||
-              displayedStatus === ReservationStatus.PENDING_PAYMENT ||
-              displayedStatus === ReservationStatus.CONFIRMED;
+              displayedStatus === ReservationStatus.DEVIS ||
+              displayedStatus === ReservationStatus.CONFIRME;
 
-            // Les réservations sont modifiables uniquement si elles sont À venir ou En attente de paiement
             const isEditable =
-              displayedStatus === ReservationStatus.UPCOMING ||
-              displayedStatus === ReservationStatus.PENDING_PAYMENT;
+              displayedStatus === ReservationStatus.DEVIS;
 
             return (
               <Grid item xs={12} key={res.id}>
@@ -939,6 +873,9 @@ const ReservationList: React.FC = () => {
           open={openDetailsDialog}
           onClose={handleCloseDetailsDialog}
           reservation={selectedReservation}
+          onDownloadPdf={handleDownloadProformaPDF}
+          onConfirm={handleConfirmQuote}
+          hasProforma={proformas.some((p: any) => p.reservation?.id === selectedReservation.id)}
         />
       )}
 

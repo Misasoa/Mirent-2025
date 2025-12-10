@@ -10,10 +10,13 @@ import {
   Get,
   Delete,
   Query,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create_reservation.dto';
 import { CompleteReservationDto } from './dto/complete_reservation.dto';
+import { UpdateReservationDto } from './dto/update_reservation.dto';
 
 @Controller('reservations')
 export class ReservationController {
@@ -24,10 +27,24 @@ export class ReservationController {
     return this.reservationService.findAll(clientId);
   }
 
+  @Get(':id/pdf')
+  async getPdf(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return this.reservationService.getPdf(id, res);
+  }
+
   @Post('devis')
   @UsePipes(new ValidationPipe())
   createDevis(@Body() createReservationDto: CreateReservationDto) {
     return this.reservationService.createDevis(createReservationDto);
+  }
+
+  @Patch(':id')
+  @UsePipes(new ValidationPipe())
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateReservationDto: UpdateReservationDto,
+  ) {
+    return this.reservationService.update(id, updateReservationDto);
   }
 
   @Patch(':id/confirm')
@@ -57,3 +74,4 @@ export class ReservationController {
     return this.reservationService.deleteReservation(id);
   }
 }
+

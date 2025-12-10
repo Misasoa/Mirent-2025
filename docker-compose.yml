@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./mirentt-bo
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_NAME=Mirent_BD
+      # Ajoutez ici vos autres variables d'environnement (JWT, etc.)
+    depends_on:
+      - db
+    networks:
+      - mirent-network
+
+  frontend:
+    build: ./Mirent-FO
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - mirent-network
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=Mirent_BD
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mirent-network
+
+networks:
+  mirent-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

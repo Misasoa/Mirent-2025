@@ -9,7 +9,10 @@ import {
   Box,
   Divider,
   Grid,
+  Stack,
 } from "@mui/material";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
@@ -57,7 +60,10 @@ export interface Reservation {
 interface ReservationDetailsDialogProps {
   open: boolean;
   onClose: () => void;
-  reservation: Reservation | null; // Changement: on passe l'objet entier
+  reservation: Reservation | null;
+  onDownloadPdf?: (id: number) => void;
+  onConfirm?: (id: number) => void;
+  hasProforma?: boolean;
 }
 
 // Nouvelle fonction utilitaire pour déterminer le statut affiché
@@ -72,21 +78,30 @@ const getDisplayedStatus = (
   const startDate = dayjs(reservation.pickup_date);
   const endDate = dayjs(reservation.return_date);
 
-  if (reservation.status === "Annulée") {
+  // Normalisation ou vérification directe du statut backend (en minuscule)
+  if (reservation.status === "annulee") {
     return "Annulée";
   }
-  if (reservation.status === "Terminée") {
+  if (reservation.status === "terminee") {
     return "Terminée";
+  }
+  if (reservation.status === "devis") {
+    return "Devis";
+  }
+  if (reservation.status === "confirmee") {
+    // Si confirmé et date passée => Complété
+    if (today.isAfter(endDate, "day")) {
+      return "Complété";
+    }
+    return "Confirmé";
   }
 
+  // Fallback si le status n'est pas reconnu (ou si logique date pure nécessaire pour compatibilité)
   if (today.isBefore(startDate, "day")) {
-    return "À venir";
+    return "Confirmé"; // ou À venir si on veut garder la nuance
   }
   if (today.isBetween(startDate, endDate, "day", "[]")) {
-    return "En cours";
-  }
-  if (today.isAfter(endDate, "day")) {
-    return "Terminée";
+    return "Confirmé"; // ou En cours
   }
 
   return reservation.status;
@@ -96,6 +111,9 @@ const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> = ({
   open,
   onClose,
   reservation,
+  onDownloadPdf,
+  onConfirm,
+  hasProforma,
 }) => {
   const displayedStatus = getDisplayedStatus(reservation);
 
@@ -105,10 +123,12 @@ const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> = ({
         return "red";
       case "Terminée":
         return "green";
-      case "En cours":
+      case "Complété":
         return "orange";
-      case "À venir":
-        return "blue";
+      case "Confirmé":
+        return "#1976d2"; // Primary blue
+      case "Devis":
+        return "info.main"; // Or a specific blue
       default:
         return "inherit";
     }
@@ -274,10 +294,40 @@ const ReservationDetailsDialog: React.FC<ReservationDetailsDialogProps> = ({
           <Typography>Aucune réservation sélectionnée.</Typography>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary" variant="contained">
+      <DialogActions sx={{ p: 2, justifyContent: "space-between" }}>
+        <Button onClick={onClose} color="inherit">
           Fermer
         </Button>
+        <Stack direction="row" spacing={2}>
+          {/* Bouton Télécharger PDF - seulement si devis */}
+          {reservation?.status === "devis" && onDownloadPdf && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<PictureAsPdfIcon />}
+              onClick={() => reservation && onDownloadPdf(reservation.id)}
+            >
+              Imprimer Devis (PDF)
+            </Button>
+          )}
+
+          {/* Bouton Confirmer Devis - seulement si devis */}
+          {reservation?.status === "devis" && onConfirm && (
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<CheckCircleIcon />}
+              onClick={() => {
+                if (reservation) {
+                  onConfirm(reservation.id);
+                  onClose();
+                }
+              }}
+            >
+              Confirmer le devis
+            </Button>
+          )}
+        </Stack>
       </DialogActions>
     </Dialog>
   );

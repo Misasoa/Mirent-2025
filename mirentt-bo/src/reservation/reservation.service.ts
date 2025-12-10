@@ -12,6 +12,7 @@ import {
   ReservationStatus,
 } from '../entities/reservation.entity';
 import { CreateReservationDto } from './dto/create_reservation.dto';
+import { UpdateReservationDto } from './dto/update_reservation.dto';
 import { Client } from '../entities/client.entity';
 import { Vehicule } from '../entities/vehicle.entity';
 import { Region } from '../entities/region.entity';
@@ -23,6 +24,8 @@ import { Facture } from 'src/entities/facture.entity';
 
 import { FactureService } from 'src/facturation/facturation.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { PdfService } from 'src/pdf/pdf.service';
+import { Response } from 'express';
 
 // 🔹 Fonction utilitaire pour convertir un nombre en lettres (français simplifié)
 function numberToFrenchWords(n: number): string {
@@ -144,6 +147,7 @@ export class ReservationService {
     private prixCarburantRepository: Repository<PrixCarburant>,
     private factureService: FactureService,
     private notificationsService: NotificationsService,
+    private pdfService: PdfService,
   ) { }
 
   async createDevis(dto: CreateReservationDto): Promise<Reservation> {
@@ -264,10 +268,65 @@ export class ReservationService {
     return savedDevis;
   }
 
+  async update(id: number, dto: UpdateReservationDto): Promise<Reservation> {
+    const reservation = await this.reservationRepository.findOne({
+      where: { id },
+      relations: ['client', 'location', 'location.prix', 'vehicule', 'vehicule.status'],
+    });
+
+    if (!reservation) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
+
+    // Mise à jour des infos client
+    if (dto.fullName) reservation.client.lastName = dto.fullName;
+    if (dto.phone) reservation.client.phone = dto.phone;
+    if (dto.email) reservation.client.email = dto.email;
+
+    // Sauvegarder les changements du client
+    if (dto.fullName || dto.phone || dto.email) {
+      await this.clientRepository.save(reservation.client);
+    }
+
+    // Mise à jour des dates et recalcul du prix
+    const pickupStr = dto.pickup_date || dto.startDate;
+    const returnStr = dto.return_date || dto.endDate;
+
+    if (pickupStr || returnStr) {
+      // On utilise les nouvelles dates ou on garde les anciennes
+      const currentPickup = new Date(reservation.pickup_date);
+      const currentReturn = new Date(reservation.return_date);
+
+      const newPickup = pickupStr ? new Date(pickupStr) : currentPickup;
+      const newReturn = returnStr ? new Date(returnStr) : currentReturn;
+
+      if (newReturn <= newPickup) {
+        throw new BadRequestException('La date de retour doit être après la date de départ');
+      }
+
+      // Calcul du nombre de jours
+      const rentalDays = Math.ceil(
+        (newReturn.getTime() - newPickup.getTime()) / (1000 * 3600 * 24)
+      );
+
+      // Recalcul du prix
+      if (reservation.location && reservation.location.prix) {
+        const dailyRate = parseFloat(String(reservation.location.prix.prix));
+        reservation.total_price = rentalDays * dailyRate;
+      }
+
+      reservation.nombreJours = rentalDays;
+      reservation.pickup_date = newPickup;
+      reservation.return_date = newReturn;
+    }
+
+    return this.reservationRepository.save(reservation);
+  }
+
   async confirmReservation(reservationId: number): Promise<Reservation> {
     const reservation = await this.reservationRepository.findOne({
       where: { id: reservationId },
-      relations: ['vehicule', 'bonDeCommande'],
+      relations: ['vehicule', 'bonDeCommande', 'client'],
     });
     if (!reservation)
       throw new NotFoundException(
@@ -348,6 +407,7 @@ export class ReservationService {
         'location',
         'location.prix',
         'bonDeCommande',
+        'client',
       ],
     });
 
@@ -489,8 +549,7 @@ export class ReservationService {
 
     // Empêcher la suppression des réservations confirmées ou terminées
     if (
-      reservation.status === ReservationStatus.CONFIRMEE ||
-      reservation.status === ReservationStatus.TERMINEE
+      reservation.status === ReservationStatus.CONFIRMEE
     ) {
       throw new ForbiddenException(
         `Cannot delete reservation in status: ${reservation.status}. Use cancel instead.`,
@@ -543,6 +602,7 @@ export class ReservationService {
             id: res.location.id,
             nom_region: res.location.nom_region,
             nom_district: res.location.nom_district,
+            prix: res.location.prix,
           }
           : null,
         // Ajouter des informations supplémentaires pour l'annulation
@@ -554,5 +614,31 @@ export class ReservationService {
           res.status === ReservationStatus.ANNULEE,
       };
     });
+  }
+
+  async getPdf(id: number, res: Response): Promise<void> {
+    const reservation = await this.reservationRepository.findOne({
+      where: { id },
+      relations: [
+        'client',
+        'vehicule',
+        'location',
+        'location.prix',
+      ],
+    });
+
+    if (!reservation) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
+
+    const pdfBuffer = await this.pdfService.generateReservationPdf(reservation);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="devis_${reservation.reference}.pdf"`,
+    );
+
+    res.send(pdfBuffer);
   }
 }
