@@ -21,7 +21,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect, useCallback } from "react"; // Import useCallback
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import Navbar from "../components/Navbar";
+import Navbar from "../Components/Navbar";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied";
 import InfoIcon from "@mui/icons-material/Info";
@@ -39,7 +39,7 @@ import {
 } from "../../redux/features/vehicle/vehiclesSlice";
 import { RootState } from "../../redux/store";
 import { useAppDispatch } from "../../hooks";
-import VehicleDetails from "../components/VehiclesDetails"; // Ensure VehicleDetails can handle null prop
+import VehicleDetails from "../Components/VehiclesDetails"; // Ensure VehicleDetails can handle null prop
 
 const VehiclesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -89,8 +89,8 @@ const VehiclesPage: React.FC = () => {
     const matchesStatus = statusFilter === "Tous" || vehicle.status.status === statusFilter;
     const matchesSearch = searchQuery
       ? vehicle.marque.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        vehicle.modele.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        vehicle.immatriculation?.toLowerCase().includes(searchQuery.toLowerCase())
+      vehicle.modele.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vehicle.immatriculation?.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
     return matchesBrand && matchesType && matchesStatus && matchesSearch;
   });
@@ -355,17 +355,17 @@ const VehiclesPage: React.FC = () => {
         <Grid container spacing={4}>
           {vehiclesLoading || vehiclesTypeLoading || vehiclesStatusLoading
             ? Array.from(new Array(itemsPerPage)).map((_, index) => ( // Use itemsPerPage for skeleton count
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Skeleton variant="rectangular" height={240} animation="wave" sx={{ borderRadius: 2 }} />
-                  <Box sx={{ pt: 1.5, pb: 2, px: 1 }}>
-                    <Skeleton width="80%" height={30} />
-                    <Skeleton width="60%" height={20} />
-                    <Skeleton width="40%" height={20} />
-                  </Box>
-                </Grid>
-              ))
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Skeleton variant="rectangular" height={240} animation="wave" sx={{ borderRadius: 2 }} />
+                <Box sx={{ pt: 1.5, pb: 2, px: 1 }}>
+                  <Skeleton width="80%" height={30} />
+                  <Skeleton width="60%" height={20} />
+                  <Skeleton width="40%" height={20} />
+                </Box>
+              </Grid>
+            ))
             : paginatedVehicles.length > 0
-            ? paginatedVehicles.map((vehicle, index) => (
+              ? paginatedVehicles.map((vehicle, index) => (
                 <Grid item xs={12} sm={6} md={4} key={vehicle.id}>
                   <motion.div
                     custom={index}
@@ -446,8 +446,8 @@ const VehiclesPage: React.FC = () => {
                                 vehicle.status.status === "Disponible"
                                   ? "#2e7d32"
                                   : vehicle.status.status === "Réservé"
-                                  ? "#ff9800"
-                                  : "#d32f2f",
+                                    ? "#ff9800"
+                                    : "#d32f2f",
                               fontWeight: 600,
                               fontFamily: "'Inter', sans-serif",
                             }}
@@ -503,7 +503,7 @@ const VehiclesPage: React.FC = () => {
                   </motion.div>
                 </Grid>
               ))
-            : (
+              : (
                 <Box sx={{ width: "100%", textAlign: "center", py: 10 }}>
                   <SentimentDissatisfiedIcon sx={{ fontSize: 60, color: "#6b7280" }} />
                   <Typography variant="h5" sx={{ color: "#1f2937", mt: 2 }}>

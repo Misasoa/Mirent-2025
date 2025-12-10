@@ -28,7 +28,7 @@ import {
 } from "../../redux/features/vehicle/vehiclesSlice";
 import { motion } from "framer-motion";
 import { addReservation } from "../../redux/features/reservation/reservationSlice";
-import Navbar from "../components/Navbar";
+import Navbar from "../Components/Navbar";
 
 interface Lieu {
   id: number;
