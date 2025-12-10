@@ -5,6 +5,16 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    include: ["@mui/x-date-pickers"],
+    include: ["@mui/x-date-pickers", "@mui/material", "@mui/x-date-pickers/AdapterDateFns"],
+  },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+          return;
+        }
+        warn(warning);
+      },
+    },
   },
 });
