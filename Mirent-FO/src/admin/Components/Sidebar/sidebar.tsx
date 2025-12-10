@@ -130,7 +130,7 @@ interface Notification {
 }
 
 // URL de base de votre API NestJS
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const Sidebar: React.FC<SidebarProps> = ({ onCollapseChange }) => {
   const [openClients, setOpenClients] = useState(false);
   const [openVehicules, setOpenVehicules] = useState(false);
@@ -350,7 +350,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onCollapseChange }) => {
 
     try {
       await axios.post(
-        "http://localhost:3000/utilisateurs/logout",
+        `${import.meta.env.VITE_API_BASE_URL}/utilisateurs/logout`,
         {},
         {
           headers: {

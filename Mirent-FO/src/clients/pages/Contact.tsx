@@ -80,7 +80,7 @@ const Contact = () => {
         setApiError(null);
 
         try {
-            await axios.post("http://localhost:3000/contact", formData);
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/contact`, formData);
             setSuccess(true);
             setFormData({ name: "", email: "", subject: "", message: "" });
 

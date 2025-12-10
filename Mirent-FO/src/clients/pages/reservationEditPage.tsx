@@ -180,7 +180,7 @@ const ReservationEditDialog: React.FC<ReservationEditDialogProps> = ({
       }
 
       const response = await fetch(
-        `http://localhost:3000/reservations/${reservation.id}`,
+        `${import.meta.env.VITE_API_BASE_URL}/reservations/${reservation.id}`,
         {
           method: "PATCH",
           headers: {

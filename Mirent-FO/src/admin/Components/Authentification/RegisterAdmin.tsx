@@ -57,7 +57,7 @@ const RegisterAdmin: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/utilisateur/register/admin",
+        `${import.meta.env.VITE_API_BASE_URL}/utilisateur/register/admin`,
         {
           firstName,
           lastName,

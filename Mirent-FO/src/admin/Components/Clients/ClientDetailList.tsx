@@ -63,7 +63,7 @@ const ClientsList: React.FC = () => {
       setLoadingClients(true);
       setErrorClients(null);
       try {
-        const response = await axios.get("http://localhost:3000/clients");
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/clients`);
         setClients(response.data);
       } catch (error) {
         console.error("Erreur lors du chargement des clients:", error);

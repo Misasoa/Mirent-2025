@@ -229,7 +229,7 @@ const Accueil: React.FC = () => {
     const fetchAvailableVehicles = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3000/vehicles/available-count"
+          `${import.meta.env.VITE_API_BASE_URL}/vehicles/available-count`
         );
         const data = await response.json();
         // L'API peut retourner soit un nombre directement, soit un objet {count: number}
@@ -251,7 +251,7 @@ const Accueil: React.FC = () => {
     const fetchAvailableClients = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3000/clients/client-count"
+          `${import.meta.env.VITE_API_BASE_URL}/clients/client-count`
         );
         const data = await response.json();
         if (response.ok) {
@@ -280,7 +280,7 @@ const Accueil: React.FC = () => {
     const fetchTotalRevenue = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3000/paiements/total-revenue"
+          `${import.meta.env.VITE_API_BASE_URL}/paiements/total-revenue`
         );
         const data = await response.json();
         if (response.ok) {
@@ -307,7 +307,7 @@ const Accueil: React.FC = () => {
     const fetchOccupancyRate = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3000/vehicles/occupancy-rate"
+          `${import.meta.env.VITE_API_BASE_URL}/vehicles/occupancy-rate`
         );
         const data = await response.json();
         if (response.ok) {

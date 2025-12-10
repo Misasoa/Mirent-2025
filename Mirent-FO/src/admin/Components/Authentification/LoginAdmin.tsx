@@ -51,7 +51,7 @@ const LoginAdmin: React.FC = () => {
             console.log("🔵 Tentative de connexion admin avec email:", email);
 
             const response = await axios.post(
-                "http://localhost:3000/utilisateur/login",
+                `${import.meta.env.VITE_API_BASE_URL}/utilisateur/login`,
                 {
                     email,
                     password,

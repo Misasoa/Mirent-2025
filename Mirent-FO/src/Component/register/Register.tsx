@@ -63,7 +63,7 @@ const Register: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/utilisateur/register/client",
+        `${import.meta.env.VITE_API_BASE_URL}/utilisateur/register/client`,
         {
           firstName,
           lastName,

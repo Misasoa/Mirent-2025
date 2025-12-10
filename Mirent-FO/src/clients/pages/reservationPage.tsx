@@ -378,7 +378,7 @@ const ReservationPage: React.FC = () => {
 
   const fetchRegions = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:3000/regions"); // Assurez-vous que l'URL est correcte
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/regions`); // Assurez-vous que l'URL est correcte
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -433,7 +433,7 @@ const ReservationPage: React.FC = () => {
       // Récupérer le clientId depuis la table clients via l'email
       console.log("🔍 Récupération du client par email:", userInfo.email);
       const clientResponse = await fetch(
-        `http://localhost:3000/clients?email=${encodeURIComponent(userInfo.email)}`,
+        `${import.meta.env.VITE_API_BASE_URL}/clients?email=${encodeURIComponent(userInfo.email)}`,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -467,7 +467,7 @@ const ReservationPage: React.FC = () => {
 
       console.log("📝 Envoi de la demande de devis:", devisPayload);
 
-      const response = await fetch("http://localhost:3000/reservations/devis", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/reservations/devis`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

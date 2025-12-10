@@ -74,7 +74,7 @@ const ContractDetails: React.FC<ContractDetailsProps> = ({
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/clients/${clientId}/proforma-items`
+          `${import.meta.env.VITE_API_BASE_URL}/clients/${clientId}/proforma-items`
         );
         const fetchedItems = response.data;
         setContractItems(fetchedItems);
@@ -142,9 +142,8 @@ const ContractDetails: React.FC<ContractDetailsProps> = ({
               <TableRow key={item.id}>
                 <TableCell>{item.id}</TableCell>
                 <TableCell>{item.proforma?.proformaNumber || "N/A"}</TableCell>
-                <TableCell>{`${item.vehicle?.marque || ""} ${
-                  item.vehicle?.modele || "N/A"
-                }`}</TableCell>
+                <TableCell>{`${item.vehicle?.marque || ""} ${item.vehicle?.modele || "N/A"
+                  }`}</TableCell>
                 <TableCell>{item.region?.nom_region || "N/A"}</TableCell>
                 <TableCell>{item.nombreJours}</TableCell>
                 <TableCell>

@@ -225,7 +225,7 @@ const PaiementPage: React.FC = () => {
       setTimeout(() => {
         dispatch(fetchAllPaiementsWithDetails());
         // Rafraîchir aussi les BDC en attente
-        fetch("http://localhost:3000/commande/pending-payments")
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/commande/pending-payments`)
           .then(res => res.json())
           .then(data => setPendingBDC(data || []))
           .catch(err => console.error("Erreur lors du rafraîchissement des BDC", err));

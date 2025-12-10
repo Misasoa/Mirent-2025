@@ -37,7 +37,7 @@ const Login: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/utilisateur/login",
+        `${import.meta.env.VITE_API_BASE_URL}/utilisateur/login`,
         {
           email,
           password,

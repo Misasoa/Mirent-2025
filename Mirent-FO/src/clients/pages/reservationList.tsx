@@ -51,7 +51,7 @@ dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter); // Extend dayjs with isSameOrAfter
 
 // URL de base de votre API NestJS (à ajuster si nécessaire)
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Enumération pour les statuts de réservation (doit correspondre à ReservationStatus.ts du backend)
 enum ReservationStatus {

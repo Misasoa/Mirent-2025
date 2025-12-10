@@ -4,8 +4,8 @@ import dayjs from "dayjs";
 import { Prix, Region } from "../../../types/region";
 import { useNavigate } from "react-router-dom";
 
-type Client = { id: number; [key: string]: any };
-type Vehicle = { id: number; [key: string]: any };
+type Client = { id: number;[key: string]: any };
+type Vehicle = { id: number;[key: string]: any };
 
 interface DevisForm {
   clientName: string;
@@ -59,24 +59,24 @@ const CreateDevis = () => {
 
   useEffect(() => {
     const fetchClients = async () => {
-      const response = await fetch("http://localhost:3000/clients");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/clients`);
       const data = await response.json();
       setClients(data);
     };
 
     const fetchVehicles = async () => {
-      const response = await fetch("http://localhost:3000/vehicles");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/vehicles`);
       const data = await response.json();
       setVehicles(data);
     };
     const fetchRegions = async () => {
-      const response = await fetch("http://localhost:3000/regions");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/regions`);
       const data = await response.json();
       setRegions(data);
     };
 
     const fetchPrix = async () => {
-      const response = await fetch("http://localhost:3000/prixs");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/prixs`);
       const data = await response.json();
       console.log("Data prixs :", data);
       setPrix(data);
@@ -175,7 +175,7 @@ const CreateDevis = () => {
     console.log("Payload envoyé :", payload);
 
     try {
-      const response = await fetch("http://localhost:3000/devis", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/devis`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -334,8 +334,8 @@ const CreateDevis = () => {
           label="Prix total"
           value={
             form.items[0].prixUnitaire &&
-            form.items[0].dateDebut &&
-            form.items[0].dateFin
+              form.items[0].dateDebut &&
+              form.items[0].dateFin
               ? calculateDays() * Number(form.items[0].prixUnitaire)
               : 0
           }
