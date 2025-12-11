@@ -12,12 +12,12 @@ async function bootstrap() {
   app.useLogger(new Logger());
   dotenv.config();
 
-  // Loggez le secret JWT au démarrage de l'application
-  console.log('JWT_SECRET (from .env at startup):', 'ghioouitu5632iiuo');
+  // Configuration JWT avec valeur par défaut pour éviter le crash au démarrage
   if (!process.env.JWT_SECRET) {
-    console.error('CRITICAL ERROR: JWT_SECRET is not set in environment!');
-    process.exit(1);
+    process.env.JWT_SECRET = 'ghioouitu5632iiuo';
+    console.warn('WARNING: JWT_SECRET not set, using default value');
   }
+  console.log('JWT_SECRET configured');
 
   // Activer CORS pour tout le backend via NestJS
   // app.use(cors(...)) supprimé pour éviter les conflits
