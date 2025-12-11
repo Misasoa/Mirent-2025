@@ -65,6 +65,12 @@ const RegisterAdmin: React.FC = () => {
           email,
           password,
           confirmPassword,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // 🔥 nécessaire pour corriger CORS
         }
       );
 
@@ -72,17 +78,19 @@ const RegisterAdmin: React.FC = () => {
       console.log("Inscription admin réussie :", response.data);
 
       setTimeout(() => {
-        navigate("/admin"); // Redirect to admin dashboard
+        navigate("/admin");
       }, 2000);
+
     } catch (err: any) {
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError(
-          "Une erreur est survenue lors de la création du compte. Veuillez réessayer."
-        );
-      }
       console.error("Erreur d'inscription admin:", err);
+
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message === "Network Error") {
+        setError("Erreur réseau ou CORS bloqué. Vérifiez le backend.");
+      } else {
+        setError("Une erreur est survenue. Veuillez réessayer.");
+      }
     } finally {
       setLoading(false);
     }
@@ -94,10 +102,10 @@ const RegisterAdmin: React.FC = () => {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", // Darker theme for Admin
+        background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
       }}
     >
-      {/* En-tête */}
+      {/* Header */}
       <Box
         bgcolor="rgba(255, 255, 255, 0.9)"
         p={1}
@@ -116,7 +124,6 @@ const RegisterAdmin: React.FC = () => {
           boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {/* Logo */}
         <Box display="flex" alignItems="center">
           <RouterLink to="/admin" style={{ textDecoration: "none" }}>
             <Box
@@ -134,7 +141,7 @@ const RegisterAdmin: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Contenu principal */}
+      {/* Main content */}
       <Container
         maxWidth="lg"
         sx={{
@@ -164,7 +171,7 @@ const RegisterAdmin: React.FC = () => {
               bgcolor: "rgba(255, 255, 255, 0.98)",
             }}
           >
-            {/* Partie gauche - Illustration */}
+            {/* Left side image */}
             {!isMobile && (
               <Box
                 sx={{
@@ -215,7 +222,7 @@ const RegisterAdmin: React.FC = () => {
               </Box>
             )}
 
-            {/* Partie droite - Formulaire */}
+            {/* Right side form */}
             <Box sx={{ flex: 1, p: isMobile ? 4 : 5 }}>
               <Stack spacing={3}>
                 <Box textAlign="center">
@@ -228,24 +235,15 @@ const RegisterAdmin: React.FC = () => {
                 </Box>
 
                 <AnimatePresence>
-                  {/* Affichage des messages d'erreur et de succès */}
                   {error && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                    >
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <Alert severity="error" variant="filled" sx={{ borderRadius: 2 }}>
                         {error}
                       </Alert>
                     </motion.div>
                   )}
                   {success && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                    >
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <Alert severity="success" variant="filled" sx={{ borderRadius: 2 }}>
                         {success}
                       </Alert>
@@ -263,7 +261,6 @@ const RegisterAdmin: React.FC = () => {
                       onChange={(e) => setFirstName(e.target.value)}
                       size="small"
                       variant="outlined"
-                      disabled={loading || !!success}
                       InputProps={{
                         sx: { borderRadius: 2 },
                         startAdornment: (
@@ -281,7 +278,6 @@ const RegisterAdmin: React.FC = () => {
                       onChange={(e) => setLastName(e.target.value)}
                       size="small"
                       variant="outlined"
-                      disabled={loading || !!success}
                       InputProps={{
                         sx: { borderRadius: 2 },
                         startAdornment: (
@@ -301,7 +297,6 @@ const RegisterAdmin: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     size="small"
                     variant="outlined"
-                    disabled={loading || !!success}
                     InputProps={{
                       sx: { borderRadius: 2 },
                       startAdornment: (
@@ -320,7 +315,6 @@ const RegisterAdmin: React.FC = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     size="small"
                     variant="outlined"
-                    disabled={loading || !!success}
                     InputProps={{
                       sx: { borderRadius: 2 },
                       startAdornment: (
@@ -338,7 +332,6 @@ const RegisterAdmin: React.FC = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     size="small"
                     variant="outlined"
-                    disabled={loading || !!success}
                     InputProps={{
                       sx: { borderRadius: 2 },
                       startAdornment: (
@@ -358,8 +351,10 @@ const RegisterAdmin: React.FC = () => {
                   fullWidth
                   size="large"
                   onClick={handleRegister}
-                  disabled={loading || !!success}
-                  startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <HowToRegIcon />}
+                  disabled={loading}
+                  startIcon={
+                    loading ? <CircularProgress size={20} color="inherit" /> : <HowToRegIcon />
+                  }
                   sx={{
                     borderRadius: 3,
                     py: 1.2,
