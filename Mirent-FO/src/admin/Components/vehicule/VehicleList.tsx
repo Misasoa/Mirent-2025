@@ -407,6 +407,15 @@ const VehicleList: React.FC = () => {
     }
   };
 
+  // Vérifier si l'URL de l'image est valide (pas localhost en production)
+  const isValidImageUrl = (url: string | null | undefined): boolean => {
+    if (!url) return false;
+    // Les URLs localhost ne fonctionnent pas en production
+    if (url.includes('localhost')) return false;
+    // Vérifier que c'est une URL http/https valide
+    return url.startsWith('http://') || url.startsWith('https://');
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -540,7 +549,7 @@ const VehicleList: React.FC = () => {
                           <TableCell
                             sx={{ display: "flex", alignItems: "center" }}
                           >
-                            {vehicle.imageUrl ? (
+                            {isValidImageUrl(vehicle.imageUrl) ? (
                               <Avatar
                                 src={vehicle.imageUrl}
                                 alt={vehicle.nom}
