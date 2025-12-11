@@ -60,18 +60,22 @@ async function bootstrap() {
     }),
   );
 
-  // -------------------------------
-  // 📁 FICHIERS STATIQUES
-  // -------------------------------
-  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
-
-  // Ajouter CORS uniquement pour les uploads
+  // Middleware CORS pour les uploads (avant express.static)
   app.use('/uploads', (req, res, next) => {
-    res.header('Access-Control-Allow-Origin', allowedOrigins.join(', '));
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    }
     res.header('Access-Control-Allow-Methods', 'GET,OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
     next();
   });
+
+  // Servir les fichiers statiques
+  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
   // -------------------------------
   // 🚀 LANCEMENT DU SERVEUR

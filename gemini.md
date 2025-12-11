@@ -329,3 +329,16 @@
     - Ligne 361-362: Ajout de `localStorage.removeItem("user_info")` et changement de `navigate("/login")` vers `navigate("/admin/login")` (cas de déconnexion réussie)
     - Ligne 366-367: Ajout de `localStorage.removeItem("user_info")` et changement de `navigate("/login")` vers `navigate("/admin/login")` (cas d'erreur de déconnexion)
   - **Résultat**: Les administrateurs sont maintenant correctement redirigés vers `/admin/login` lors de la déconnexion, et toutes les données d'authentification sont nettoyées du localStorage.
+
+- **Date**: mercredi 11 décembre 2025
+- **Description**: Correction du problème d'ajout de types et de statuts de véhicules - les méthodes POST étaient manquantes.
+  - **Problème identifié**: 
+    - Les contrôleurs `TypeController` et `StatusController` n'avaient pas de méthode POST pour créer des types/statuts
+    - Le frontend essayait d'ajouter des types mais l'API retournait une erreur 404
+    - Sur la base de données en production (Neon), aucun type ni statut n'existait
+  - **Fichiers modifiés**:
+    - `mirentt-bo/src/type/type.controller.ts` : Ajout de la méthode `@Post()` avec `createType()`
+    - `mirentt-bo/src/type/type.service.ts` : Ajout de la méthode `create()` pour créer un nouveau type
+    - `mirentt-bo/src/status/status.controller.ts` : Ajout de la méthode `@Post()` avec `createStatus()`
+    - `mirentt-bo/src/status/status.service.ts` : Ajout de la méthode `create()` pour créer un nouveau statut
+  - **Résultat**: Les administrateurs peuvent maintenant ajouter des types et des statuts de véhicules via l'interface d'administration.

@@ -12,10 +12,15 @@ export class TypeService {
   constructor(
     @InjectRepository(Type)
     private readonly typesRepository: Repository<Type>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Type[]> {
     return this.typesRepository.find();
+  }
+
+  async create(typeName: string): Promise<Type> {
+    const newType = this.typesRepository.create({ type: typeName });
+    return this.typesRepository.save(newType);
   }
 
   // Dans votre service TypesService
