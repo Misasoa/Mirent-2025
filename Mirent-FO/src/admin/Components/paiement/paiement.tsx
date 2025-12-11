@@ -6,6 +6,7 @@ import {
   PaymentMethod,
   resetPaiementState,
 } from "../../../redux/features/paiement/paiementSlice";
+import { API_BASE_URL } from "../../../config";
 import {
   Box,
   Typography,
@@ -100,7 +101,7 @@ const PaiementPage: React.FC = () => {
   useEffect(() => {
     const fetchPendingBDC = async () => {
       try {
-        const response = await fetch("http://localhost:3000/commande/pending-payments");
+        const response = await fetch(`${API_BASE_URL}/commande/pending-payments`);
         const data = await response.json();
         if (response.ok) {
           setPendingBDC(data || []);
@@ -225,7 +226,7 @@ const PaiementPage: React.FC = () => {
       setTimeout(() => {
         dispatch(fetchAllPaiementsWithDetails());
         // Rafraîchir aussi les BDC en attente
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/commande/pending-payments`)
+        fetch(`${API_BASE_URL}/commande/pending-payments`)
           .then(res => res.json())
           .then(data => setPendingBDC(data || []))
           .catch(err => console.error("Erreur lors du rafraîchissement des BDC", err));

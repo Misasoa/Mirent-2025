@@ -18,7 +18,6 @@ interface UseApiResult<T> {
 
 import { API_BASE_URL } from "../config";
 
-/* const API_BASE_URL = "http://localhost:3000/proforma"; // Remplacez par l'URL de votre API NestJS */
 
 function useApi<T>(): UseApiResult<T> {
   const [state, setState] = useState<UseApiState<T>>({

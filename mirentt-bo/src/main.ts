@@ -6,7 +6,6 @@ import 'reflect-metadata';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as express from 'express';
-import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -20,15 +19,8 @@ async function bootstrap() {
     process.exit(1);
   }
 
-  // Activer CORS pour tout le backend
-  app.use(
-    cors({
-      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      credentials: true,
-    }),
-  );
+  // Activer CORS pour tout le backend via NestJS
+  // app.use(cors(...)) supprimé pour éviter les conflits
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -69,7 +61,11 @@ async function bootstrap() {
   const PORT = process.env.PORT || 3000;
   const logger = new Logger('Main');
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.enableCors();
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
 
   await app.listen(PORT);
   Logger.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
