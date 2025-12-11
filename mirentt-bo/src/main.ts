@@ -67,7 +67,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(PORT);
+  await app.listen(PORT, '0.0.0.0');
   Logger.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
 }
 
