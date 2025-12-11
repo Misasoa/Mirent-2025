@@ -76,8 +76,9 @@ if (isProduction) {
       rejectUnauthorized: false,
     },
 
-    // CRITIQUE 3 : Désactiver la synchronisation du schéma en production (SÉCURITÉ)
-    synchronize: false,
+    // IMPORTANT: synchronize activé pour créer les tables initiales
+    // À désactiver après le premier déploiement réussi
+    synchronize: true,
 
     // Si votre code est dans 'dist/' après compilation:
     entities: ['dist/**/*.entity{.ts,.js}'],
