@@ -20,12 +20,15 @@ import { Vehicule } from 'src/entities/vehicle.entity';
 import { CreateVehiculeDto } from './createVehicule.dto';
 import { UpdateVehiculeDto } from './updateVehicule.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { memoryStorage } from 'multer';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Controller('vehicles')
 export class VehiclesController {
-  constructor(private readonly vehiclesService: VehiclesService) { }
+  constructor(
+    private readonly vehiclesService: VehiclesService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) { }
 
   // --- Récupérer tous les véhicules ---
   @Get()
@@ -38,13 +41,15 @@ export class VehiclesController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: join(__dirname, '..', '..', 'uploads'),
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
+      fileFilter: (req, file, callback) => {
+        const allowedMimetypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        if (!allowedMimetypes.includes(file.mimetype)) {
+          return callback(new BadRequestException('Type de fichier invalide. Formats acceptés: JPG, PNG, WEBP'), false);
+        }
+        callback(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
     }),
   )
   async create(
@@ -53,8 +58,13 @@ export class VehiclesController {
   ): Promise<Vehicule> {
     let imageUrl: string | undefined;
     if (file) {
-      const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
-      imageUrl = `${baseUrl}/uploads/${file.filename}`;
+      try {
+        imageUrl = await this.cloudinaryService.uploadImage(file);
+        console.log('Image uploadée sur Cloudinary:', imageUrl);
+      } catch (error) {
+        console.error('Erreur upload Cloudinary:', error);
+        // Continue sans image si l'upload échoue
+      }
     }
     return this.vehiclesService.create(dto, imageUrl);
   }
@@ -64,20 +74,15 @@ export class VehiclesController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: join(__dirname, '..', '..', 'uploads'),
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (req, file, callback) => {
-        const allowedMimetypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        const allowedMimetypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
         if (!allowedMimetypes.includes(file.mimetype)) {
-          return callback(new BadRequestException('Invalid file type'), false);
+          return callback(new BadRequestException('Type de fichier invalide. Formats acceptés: JPG, PNG, WEBP'), false);
         }
         callback(null, true);
       },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
     }),
   )
   async update(
@@ -87,8 +92,13 @@ export class VehiclesController {
   ): Promise<Vehicule> {
     let imageUrl: string | undefined;
     if (file) {
-      const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
-      imageUrl = `${baseUrl}/uploads/${file.filename}`;
+      try {
+        imageUrl = await this.cloudinaryService.uploadImage(file);
+        console.log('Image mise à jour sur Cloudinary:', imageUrl);
+      } catch (error) {
+        console.error('Erreur upload Cloudinary:', error);
+        // Continue sans changer l'image si l'upload échoue
+      }
     }
     return this.vehiclesService.update(id, dto, imageUrl);
   }

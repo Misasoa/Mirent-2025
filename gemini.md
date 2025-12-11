@@ -342,3 +342,23 @@
     - `mirentt-bo/src/status/status.controller.ts` : Ajout de la méthode `@Post()` avec `createStatus()`
     - `mirentt-bo/src/status/status.service.ts` : Ajout de la méthode `create()` pour créer un nouveau statut
   - **Résultat**: Les administrateurs peuvent maintenant ajouter des types et des statuts de véhicules via l'interface d'administration.
+
+- **Date**: mercredi 11 décembre 2025
+- **Description**: Intégration de Cloudinary pour le stockage permanent des images de véhicules.
+  - **Problème identifié**: 
+    - Sur Render (plan gratuit), les fichiers uploadés n'étaient pas persistants
+    - Les images étaient perdues à chaque redéploiement
+  - **Fichiers créés**:
+    - `mirentt-bo/src/cloudinary/cloudinary.service.ts` : Service pour uploader les images vers Cloudinary
+    - `mirentt-bo/src/cloudinary/cloudinary.module.ts` : Module global Cloudinary
+  - **Fichiers modifiés**:
+    - `mirentt-bo/src/app.module.ts` : Ajout du CloudinaryModule
+    - `mirentt-bo/src/vehicles/vehicles.controller.ts` : 
+      - Remplacement de `diskStorage` par `memoryStorage`
+      - Utilisation de CloudinaryService pour l'upload des images
+      - Les images sont maintenant stockées sur Cloudinary de façon permanente
+  - **Variables d'environnement requises sur Render**:
+    - `CLOUDINARY_CLOUD_NAME` : Nom du cloud Cloudinary
+    - `CLOUDINARY_API_KEY` : Clé API Cloudinary
+    - `CLOUDINARY_API_SECRET` : Secret API Cloudinary
+  - **Résultat**: Les images de véhicules sont maintenant stockées de façon permanente sur Cloudinary et ne sont plus perdues lors des redéploiements.

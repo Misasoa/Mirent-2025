@@ -49,6 +49,7 @@ import { PrixCarburant } from './entities/carburant-price.entity';
 import { TypeCarburant } from './entities/carburant.entity';
 import { District } from './entities/district.entity';
 import { Reservation } from './entities/reservation.entity';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -98,6 +99,7 @@ import { Reservation } from './entities/reservation.entity';
     PaiementModule,
     PrixCarburantModule,
     TypeCarburantModule,
+    CloudinaryModule,
   ],
   controllers: [UtilisateurController],
   providers: [],
