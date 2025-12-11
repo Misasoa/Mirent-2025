@@ -23,6 +23,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
+import { API_BASE_URL } from "../../../config";
 
 const RegisterAdmin: React.FC = () => {
   const theme = useTheme();
@@ -57,7 +58,7 @@ const RegisterAdmin: React.FC = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/utilisateur/register/admin`,
+        `${API_BASE_URL}/utilisateur/register/admin`,
         {
           firstName,
           lastName,
